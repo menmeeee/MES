@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>smartmultiMessenger</title>
+<style>
+:root{--bg:#f2f3f8;--card:#fff;--tx:#1d1f2b;--sub:#757a8c;--pri:#5b6cff;--pri2:#8a5bff;--line:#e4e6ef;--theirs:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#12131a;--card:#1d1f2b;--tx:#eceef7;--sub:#9096ab;--line:#2b2e3d;--theirs:#2a2d3d}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{margin:0;font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;background:var(--bg);color:var(--tx)}
+input,select{width:100%;font-size:16px;padding:13px 14px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--tx);outline:none}
+input:focus,select:focus{border-color:var(--pri)}
+button{width:100%;font-size:15px;font-weight:bold;padding:13px;margin:6px 0;border:0;border-radius:12px;color:#fff;background:linear-gradient(135deg,var(--pri),var(--pri2));cursor:pointer}
+button:active{opacity:.8}
+button.s{background:transparent;color:var(--pri);border:1px solid var(--pri)}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+small{color:var(--sub)}
+#auth{min-height:100%;padding:28px 16px;background:linear-gradient(160deg,var(--pri),var(--pri2))}
+#auth .wrap{max-width:400px;margin:0 auto}
+.hero{text-align:center;color:#fff;margin-bottom:18px}.hero div{font-size:52px}.hero h2{margin:4px 0 0;font-size:22px}
+#msg{color:#e33;min-height:20px;font-size:14px;text-align:center}
+#dots{text-align:center;margin-bottom:8px}.dot{display:inline-block;width:28px;height:6px;border-radius:3px;background:var(--line);margin:0 3px}.dot.on{background:var(--pri)}
+.stp{font-weight:bold;margin-bottom:6px}
+#app,#chat,#callui{display:none;position:fixed;top:0;left:0;right:0;bottom:0;flex-direction:column;background:var(--bg)}
+#chat{z-index:5}#callui{z-index:9;background:#10111a;color:#fff}
+#top{background:var(--card);padding:14px 16px;font-size:18px;font-weight:bold;border-bottom:1px solid var(--line)}
+.v{display:none;flex:1;overflow:auto;padding:14px;-webkit-overflow-scrolling:touch}
+#tabs{display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+#tabs button{flex:1;width:auto;margin:0;padding:8px 0 6px;border-radius:0;background:none;color:var(--sub);font-size:11px;font-weight:normal}
+#tabs button i{display:block;font-style:normal;font-size:22px}
+#tabs button.on{color:var(--pri);font-weight:bold}
+.av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;font-weight:bold;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
+.me{display:flex;align-items:center}.me .av{margin-right:12px}
+.row{display:flex;align-items:center;background:var(--card);padding:12px;margin:8px 0;border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.row .av{margin-right:12px}.mid{flex:1;min-width:0}.mid b,.mid small{display:block}
+.dt{width:10px;height:10px;border-radius:50%;background:var(--line)}.dt.on{background:#3ccf6e}
+.empty{text-align:center;color:var(--sub);padding:40px 10px;line-height:1.8}
+#qr{background:#fff;padding:12px;border-radius:16px;display:inline-block}
+.hd{display:flex;align-items:center;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;padding:8px 6px}
+.hd span{flex:1;font-weight:bold;font-size:17px}
+.hd button{width:44px;margin:0 2px;padding:8px 0;background:none;font-size:20px}
+#log{flex:1;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
+.b{display:table;max-width:78%;padding:9px 13px;margin:6px 0;border-radius:18px 18px 18px 4px;background:var(--theirs);box-shadow:0 1px 3px rgba(0,0,0,.08);word-break:break-all;line-height:1.5}
+.b.me{margin-left:auto;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border-radius:18px 18px 4px 18px}
+.b a{color:inherit;text-decoration:none}.b img{border-radius:10px;margin-bottom:6px}
+.ft{display:flex;align-items:center;padding:8px;background:var(--card);border-top:1px solid var(--line);padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.ft input{flex:1;margin:0 6px;border-radius:22px}
+.ft button{width:44px;height:44px;margin:0;padding:0;border-radius:50%;flex:none;font-size:18px}
+#remote{flex:1;overflow:hidden;position:relative}
+#remote video{position:relative;z-index:1;width:100%;max-height:100%;background:#000}
+.ct2{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:26px}
+#lv{position:absolute;right:12px;top:12px;width:92px;border-radius:12px;z-index:3;background:#000}
+.cb{text-align:center;padding:16px 0 28px}
+.rb{width:64px;height:64px;border-radius:50%;margin:0 12px;padding:0;font-size:26px;background:#3a3d52}.rb.red{background:#e5484d}
+#gb{display:flex;flex-wrap:wrap;margin:8px -3px}
+#gb button{width:calc(50% - 6px);margin:3px;padding:20px 4px;background:var(--card);color:var(--tx);box-shadow:0 1px 6px rgba(0,0,0,.08)}
+#sc{font-size:20px;font-weight:bold;margin:8px 0}#os{color:#e5484d;font-weight:bold}
+#st{text-align:center}
+#pd{display:flex;margin:6px 0}#pd button{flex:1;margin:0 3px;padding:16px 0;font-size:20px}
+h4{margin:18px 0 4px}
+</style></head><body>
+
+<div id="auth"><div class="wrap">
+<div class="hero"><div>💬</div><h2>smartmultiMessenger</h2></div>
+<div class="card"><input id="su" placeholder="サーバーURL(例 https://xxxx.trycloudflare.com)" oninput="localStorage.base=this.value.trim()" autocapitalize="off"><small>サーバーと同じURLで開いている場合は空欄でOK</small><div id="msg"></div><div id="dots" style="display:none"><span id="d1" class="dot"></span><span id="d2" class="dot"></span><span id="d3" class="dot"></span></div>
+<div id="login">
+ <input id="lg" placeholder="メールアドレス または ID" autocapitalize="off"><input id="lp" type="password" placeholder="パスワード">
+ <button onclick="doLogin()">ログイン</button><button class="s" onclick="show('reg1')">新規登録</button></div>
+<div id="reg1" style="display:none"><div class="stp">ステップ1/3　メールアドレス</div>
+ <input id="re" type="email" placeholder="メールアドレス"><button onclick="r1()">確認コードを送信</button><button class="s" onclick="show('login')">戻る</button></div>
+<div id="reg2" style="display:none"><div class="stp">ステップ2/3　届いた番号を入力</div>
+ <input id="rc" inputmode="numeric" placeholder="6桁の番号"><button onclick="r2()">確認</button></div>
+<div id="reg3" style="display:none"><div class="stp">ステップ3/3　プロフィール</div>
+ <input id="rn" placeholder="名前"><input id="ri" placeholder="ID(英数字3〜20字)" autocapitalize="off"><input id="rp" type="password" placeholder="パスワード(6字以上)">
+ <button onclick="r3()">登録</button></div>
+</div></div></div>
+
+<div id="app">
+ <div id="top"><span id="ttl">友達</span></div>
+ <div id="vf" class="v"><div class="card me"><div class="av" id="mav"></div><div id="me" style="font-weight:bold"></div></div><div id="clist"></div></div>
+ <div id="vq" class="v" style="text-align:center">
+  <div class="card"><p style="margin-top:0">あなたのQR<br><small>相手に読み取ってもらうと友達になります</small></p><div id="qr"></div></div>
+  <div class="card"><button onclick="scan()">📷 QRを読み取る</button><video id="sv" playsinline style="display:none;width:100%;border-radius:12px"></video>
+  <button class="s" onclick="startShake()">📳 振って登録を開始</button><small>相手と同時に端末を振ると友達になります</small></div></div>
+ <div id="vg" class="v"></div>
+ <div id="vs" class="v"><div class="card"><button class="s" onclick="Notification.requestPermission()">🔔 通知を許可</button><button onclick="logout()" style="background:#e5484d">ログアウト</button></div></div>
+ <div id="tabs"><button id="tf" onclick="tab('f')"><i>👥</i>友達</button><button id="tq" onclick="tab('q')"><i>➕</i>追加</button><button id="tg" onclick="tab('g')"><i>🎮</i>ゲーム</button><button id="ts" onclick="tab('s')"><i>⚙️</i>設定</button></div>
+</div>
+
+<div id="chat">
+ <div class="hd"><button onclick="$('chat').style.display='none';cur=null">◀</button><span id="ct"></span>
+  <button onclick="call(false)">📞</button><button onclick="call(true)">🎥</button></div>
+ <div id="log"></div>
+ <div class="ft"><button class="s" onclick="$('fi').click()">📎</button><input id="fi" type="file" style="display:none" onchange="pick(this.files[0])">
+  <input id="in" placeholder="メッセージ / URL"><button onclick="sendMsg()">➤</button></div>
+</div>
+
+<div id="callui"><div class="ct2">📞 通話中…</div><div id="remote"></div><video id="lv" autoplay muted playsinline></video>
+ <div class="cb"><button class="rb" onclick="shareScreen()">🖥</button><button class="rb red" onclick="hang()">📵</button></div></div>
+
+<script src="games.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+var T=localStorage.t||'',ME={},WS,cur=null,list=[],pc=null,peer=null,ls=null,E='',quiet=false,vflag=false,pend=[];
+function $(i){return document.getElementById(i)}
+function api(p,b){return fetch(B()+p,{method:b?'POST':'GET',headers:{'Content-Type':'application/json','X-T':T},body:b?JSON.stringify(b):undefined}).then(function(r){return r.json()})}
+function show(id){['login','reg1','reg2','reg3'].forEach(function(x){$(x).style.display=x==id?'block':'none'});var n={reg1:1,reg2:2,reg3:3}[id]||0;$('dots').style.display=n?'block':'none';for(var i=1;i<=3;i++)$('d'+i).className='dot'+(i<=n?' on':'')}
+function err(m){$('msg').textContent=m||''}
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return '&#'+c.charCodeAt(0)+';'})}
+function B(){return (localStorage.base||'').replace(/\/$/,'')}
+function full(u){return u.charAt(0)=='/'?B()+u:u}
+function safe(u){return /^(https?:\/\/|\/uploads\/)/.test(u)?u:'#'}
+function doLogin(){api('/api/login',{login:$('lg').value,password:$('lp').value}).then(function(d){if(!d.ok)return err(d.error);T=d.t;localStorage.t=T;ME=d;enter()})}
+function r1(){E=$('re').value;api('/api/code',{email:E}).then(function(d){if(d.ok){err('');show('reg2')}else err(d.error)})}
+function r2(){api('/api/verify',{email:E,code:$('rc').value}).then(function(d){if(d.ok){err('');show('reg3')}else err(d.error)})}
+function r3(){api('/api/register',{email:E,name:$('rn').value,id:$('ri').value,password:$('rp').value}).then(function(d){if(d.ok){show('login');err('登録完了！ログインしてください')}else err(d.error)})}
+function logout(){localStorage.removeItem('t');location.reload()}
+var qs=location.search.match(/[?&]s=([^&]+)/);if(qs){localStorage.base=decodeURIComponent(qs[1]);history.replaceState(null,'',location.pathname)}
+if(T)api('/api/me').then(function(d){if(d.ok){ME=d;enter()}}).catch(function(){});
+
+function enter(){$('auth').style.display='none';$('app').style.display='flex';
+ $('me').textContent=ME.name+' (@'+ME.id+')';tab('f');loadC();conn();
+ new QRCode($('qr'),{text:'SMM:'+ME.id,width:200,height:200})}
+function tab(x){var N={f:'友達',q:'友達を追加',g:'ゲーム',s:'設定'};['f','q','g','s'].forEach(function(k){$('v'+k).style.display=k==x?'block':'none';$('t'+k).className=k==x?'on':''});$('ttl').textContent=N[x];if(x=='g')gUI()}
+function conn(){WS=new WebSocket((B()?B().replace(/^http/,'ws'):(location.protocol=='https:'?'wss://':'ws://')+location.host)+'/ws?t='+T);
+ WS.onmessage=function(e){onWS(JSON.parse(e.data))};WS.onclose=function(){setTimeout(conn,2000)}}
+function snd(o){if(WS&&WS.readyState==1)WS.send(JSON.stringify(o))}
+function onWS(m){
+ if(m.type=='added'){loadC();alert('友達が追加されました')}
+ else if(m.type=='msg'){if(cur&&cur.id==m.frm)bub(m.body,0);else if(window.Notification&&Notification.permission=='granted')new Notification(nameOf(m.frm),{body:'新着メッセージ'});loadC()}
+ else if(m.type=='signal')sig(m.frm,m.data)
+ else if(m.type=='relay')gRelay(m.frm,m.data)}
+function nameOf(id){for(var i=0;i<list.length;i++)if(list[i].id==id)return list[i].name;return id}
+function loadC(){api('/api/contacts').then(function(d){list=(d.list||[]).sort(function(a,b){return b.online-a.online});$('mav').textContent=(ME.name||'?').charAt(0);
+ var l=$('clist');l.innerHTML=list.length?'':'<div class="empty">まだ友達がいません<br>「追加」タブからQRや振って登録しましょう</div>';
+ list.forEach(function(c){var r=document.createElement('div');r.className='row';
+  r.innerHTML='<div class="av">'+esc(c.name.charAt(0))+'</div><div class="mid"><b>'+esc(c.name)+'</b><small>@'+esc(c.id)+'</small></div><span class="dt'+(c.online?' on':'')+'"></span>';
+  r.onclick=function(){openChat(c)};l.appendChild(r)})})}
+
+function openChat(c){cur=c;$('ct').textContent=c.name;$('log').innerHTML='';$('chat').style.display='flex';
+ api('/api/history?with='+c.id).then(function(d){(d.list||[]).forEach(function(m){bub(m.body,m.frm==ME.id)})})}
+function bub(b,mine){var o;try{o=JSON.parse(b)}catch(e){o={k:'t',t:b}}
+ var d=document.createElement('div');d.className='b'+(mine?' me':'');
+ if(o.k=='u')d.innerHTML='<a href="'+esc(full(safe(o.u)))+'" target="_blank" rel="noopener">'+(o.img?'<img src="'+esc(safe(o.img))+'" style="max-width:100%"><br>':'')+'<b>'+esc(o.title)+'</b><br><small>'+esc(o.desc)+'</small></a>';
+ else if(o.k=='f')d.innerHTML='<a href="'+esc(full(safe(o.u)))+'" download="'+esc(o.n)+'">📎 '+esc(o.n)+'</a>';
+ else d.textContent=o.t;
+ $('log').appendChild(d);$('log').scrollTop=1e9}
+function out(o){var b=JSON.stringify(o);snd({type:'msg',to:cur.id,body:b});bub(b,1)}
+function sendMsg(){var t=$('in').value.trim();if(!t)return;$('in').value='';var m=t.match(/https?:\/\/\S+/);
+ if(!m)return out({k:'t',t:t});
+ if(t!=m[0])out({k:'t',t:t});
+ api('/api/preview?url='+encodeURIComponent(m[0])).then(function(p){out({k:'u',u:m[0],title:p.title||m[0],desc:p.desc,img:p.img})})}
+function pick(f){if(!f)return;fetch(B()+'/api/upload',{method:'POST',headers:{'X-T':T,'X-Name':encodeURIComponent(f.name)},body:f})
+ .then(function(r){return r.json()}).then(function(d){if(d.ok)out({k:'f',u:d.url,n:f.name});else alert('送信失敗')})}
+
+function scan(){navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(s){
+ var v=$('sv');v.srcObject=s;v.style.display='block';v.play();var c=document.createElement('canvas'),x=c.getContext('2d');
+ (function loop(){if(!v.srcObject)return;
+  if(v.videoWidth){c.width=v.videoWidth;c.height=v.videoHeight;x.drawImage(v,0,0);
+   var q=jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height);
+   if(q&&q.data.indexOf('SMM:')==0){s.getTracks().forEach(function(t){t.stop()});v.srcObject=null;v.style.display='none';
+    api('/api/add',{id:q.data.slice(4)}).then(function(d){alert(d.ok?'友達に追加しました':d.error);loadC()});return}}
+  setTimeout(loop,200)})()}).catch(function(){alert('カメラが使えません(HTTPSで開いてください)')})}
+var lastShake=0;
+function onMotion(e){var a=e.accelerationIncludingGravity;if(!a)return;var f=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z);
+ if(f>35&&Date.now()-lastShake>1500){lastShake=Date.now();snd({type:'shake'})}}
+function startShake(){var go=function(){window.addEventListener('devicemotion',onMotion);alert('振ってください！')};
+ if(window.DeviceMotionEvent&&DeviceMotionEvent.requestPermission)DeviceMotionEvent.requestPermission().then(function(s){if(s=='granted')go()});else go()}
+
+var RTC={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+function mkpc(id){pc=new RTCPeerConnection(RTC);peer=id;pend=[];
+ pc.onicecandidate=function(e){if(e.candidate)snd({type:'signal',to:id,data:{c:e.candidate}})};
+ pc.ontrack=function(e){var s=e.streams[0],v=$('rv'+s.id);if(!v){v=document.createElement('video');v.id='rv'+s.id;v.autoplay=true;v.setAttribute('playsinline','');$('remote').appendChild(v)}v.srcObject=s};
+ pc.onnegotiationneeded=function(){if(quiet)return;pc.createOffer().then(function(o){return pc.setLocalDescription(o)}).then(function(){snd({type:'signal',to:id,data:{d:pc.localDescription,v:vflag}})})}}
+function media(v){return navigator.mediaDevices.getUserMedia({audio:true,video:v}).then(function(s){ls=s;$('lv').srcObject=s;s.getTracks().forEach(function(t){pc.addTrack(t,s)})})}
+function call(v){vflag=v;$('callui').style.display='flex';mkpc(cur.id);media(v).catch(function(){alert('マイク/カメラが使えません(HTTPS必須)');hang()})}
+function flush(){pend.forEach(function(c){pc.addIceCandidate(c)});pend=[]}
+function sig(from,d){
+ if(d.bye)return hang(true);
+ if(d.c){if(pc&&pc.remoteDescription)pc.addIceCandidate(d.c);else pend.push(d.c);return}
+ if(d.d.type=='answer'){pc.setRemoteDescription(d.d).then(flush);return}
+ var ans=function(){return pc.setRemoteDescription(d.d).then(function(){flush();return pc.createAnswer()}).then(function(a){return pc.setLocalDescription(a)}).then(function(){snd({type:'signal',to:from,data:{d:pc.localDescription}})})};
+ if(pc){ans();return}
+ if(!confirm(nameOf(from)+'から'+(d.v?'ビデオ':'音声')+'通話の着信です。出ますか？')){snd({type:'signal',to:from,data:{bye:1}});return}
+ $('callui').style.display='flex';quiet=true;mkpc(from);
+ media(!!d.v).then(ans).then(function(){quiet=false}).catch(function(){hang()})}
+function shareScreen(){if(!pc)return;
+ if(!navigator.mediaDevices.getDisplayMedia)return alert('この端末は画面共有に対応していません');
+ navigator.mediaDevices.getDisplayMedia({video:true}).then(function(s){s.getTracks().forEach(function(t){pc.addTrack(t,s)})}).catch(function(){})}
+function hang(remote){if(!remote&&peer)snd({type:'signal',to:peer,data:{bye:1}});
+ if(pc){pc.close();pc=null}if(ls){ls.getTracks().forEach(function(t){t.stop()});ls=null}
+ peer=null;quiet=false;pend=[];$('remote').innerHTML='';$('callui').style.display='none'}
+$('su').value=localStorage.base||'';
+$('in').addEventListener('keydown',function(e){if(e.keyCode==13)sendMsg()});
+$('lp').addEventListener('keydown',function(e){if(e.keyCode==13)doLogin()});
+</script></body></html>
